@@ -30,6 +30,10 @@ def main(file):
         "anime_source": data["source"],
         "anime_aired_from": data["aired"]["from"],
         "anime_aired_to": data["aired"]["to"],
+        "anime_synopsis": data['synopsis'],
+        "anime_background": data['background'],
+        "anime_rating": data['rating'],
+        
     }
 
     res = requests.post(
