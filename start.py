@@ -5,7 +5,7 @@ import requests
 from requests.adapters import HTTPAdapter, Retry
 
 ANIME_DIR = os.path.join(os.getcwd(), "animes")
-ANIME_NO = 51367
+ANIME_NO = 39936
 
 session = requests.Session()
 retries = Retry(
@@ -26,8 +26,7 @@ while True:
 
     if res.status_code == 200 and data.get("status", None) != 404:
         BASE_DIR = f"{ANIME_DIR}\\{ANIME_NO}"
-        os.makedirs(BASE_DIR) if not os.path.isdir(BASE_DIR) else None
-        file = open(f"{BASE_DIR}/anime.json", "w+")
+        file = open(f"{BASE_DIR}.json", "w+")
         json.dump(data, file, indent=4)
         file.close()
 

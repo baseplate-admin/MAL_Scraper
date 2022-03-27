@@ -1,12 +1,13 @@
+from email.mime import image
 import json
 import sys
 import requests
 import ast
 import os
 
-BASEURL = "http://127.0.0.1:8000/api/v1/upload/anime/"
+BASEURL = "http://127.0.0.1:8000/api/v1/anime/"
 AUTH_TOKEN = {
-    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY0ODI3MjYyOSwiaWF0IjoxNjQ4MTg2MjI5LCJqdGkiOiJmNTI3ZWFkYmYwMmM0NGMyOGU3ZGNjNTkyMmEzOTE5YyIsInVzZXJfaWQiOjF9.zm97oTKbmyS4iV5zbN_4wikQXLh0KOSh_plgCoZ7hEE",
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY0ODQ3MDQyMywiaWF0IjoxNjQ4Mzg0MDIzLCJqdGkiOiI0ZWE1ZGI4YWE3M2M0NmUyYTZlMDU1MjExY2NlNzJjNiIsInVzZXJfaWQiOjF9.SunZ_F2Fa8Lv-on4BUwuJZRQ5MnYtQSoUtKxevAYaxk",
 }
 
 
@@ -30,36 +31,57 @@ def main(file):
         "anime_source": data["source"],
         "anime_aired_from": data["aired"]["from"],
         "anime_aired_to": data["aired"]["to"],
-        "anime_synopsis": data['synopsis'],
-        "anime_background": data['background'],
-        "anime_rating": data['rating'],
-        
+        "anime_synopsis": data["synopsis"],
+        "anime_background": data["background"],
+        "anime_rating": data["rating"],
+        "anime_genres": data["genres"],
+        "anime_themes": data["themes"],
+        "anime_studios": data["studios"],
+        "anime_producers": data["producers"],
     }
-
     res = requests.post(
         BASEURL,
-        data=DATA,
-        files={
-            "anime_cover": (f"{data['mal_id']}.webp", anime_cover),
-        },
+        json=DATA,
         headers={
             "authorization": f"Bearer {access}",
         },
     )
+    if anime_cover:
+        image_res = requests.put(
+            f"{BASEURL}{data['mal_id']}/",
+            data=DATA,
+            files={
+                "anime_cover": (f"{data['mal_id']}.webp", anime_cover),
+            },
+            headers={
+                "authorization": f"Bearer {access}",
+            },
+        )
+    else:
+        file = open("broken.json", "w+")
+        data = json.load(file)
+        data.append(
+            {"episode": data["mal_id"]},
+        )
+        json.dump(
+            data,
+            file,
+            indent=4,
+        )
 
     if res.status_code == 201:
         print(f"PUSHED {data['mal_id']}")
     else:
         print(f"Cannot push {data['mal_id']} | Status {res.status_code}")
-        with open("new.html", "w", encoding="utf-8") as f:
+        with open("res.html", "w", encoding="utf-8") as f:
             f.write(res.text)
+        with open("image_res.html", "w", encoding="utf-8") as f:
+            f.write(image_res.text)
         sys.exit()
 
 
 def list_full_paths(directory):
-    return [
-        os.path.join(directory, file, "anime.json") for file in os.listdir(directory)
-    ]
+    return [os.path.join(directory, file) for file in os.listdir(directory)]
 
 
 if __name__ == "__main__":
