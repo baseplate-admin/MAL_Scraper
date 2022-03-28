@@ -48,7 +48,7 @@ def main(file):
     )
     if anime_cover:
         image_res = requests.put(
-            f"{BASEURL}{data['mal_id']}/",
+            f"{BASEURL}{res.json()['id']}/",
             data=DATA,
             files={
                 "anime_cover": (f"{data['mal_id']}.webp", anime_cover),
@@ -57,6 +57,13 @@ def main(file):
                 "authorization": f"Bearer {access}",
             },
         )
+        if image_res.status_code != 200:
+            print(f"Cannot push {data['mal_id']} | Status {image_res.status_code}")
+
+            with open("image_res.html", "w", encoding="utf-8") as f:
+                f.write(image_res.text)
+
+            sys.exit()
     else:
         file = open("broken.json", "w+")
         data = json.load(file)
@@ -75,8 +82,7 @@ def main(file):
         print(f"Cannot push {data['mal_id']} | Status {res.status_code}")
         with open("res.html", "w", encoding="utf-8") as f:
             f.write(res.text)
-        with open("image_res.html", "w", encoding="utf-8") as f:
-            f.write(image_res.text)
+
         sys.exit()
 
 
@@ -88,15 +94,3 @@ if __name__ == "__main__":
     full_dir = sorted(list_full_paths("./animes"))
     for files in full_dir:
         main(files)
-    # first_list = full_dir[range * 0 : range]
-    # second_list = full_dir[(range * 1) + 1 : range * 2]
-    # third_list = full_dir[(range * 2) + 1 : range * 3]
-    # fourth_list = full_dir[(range * 3) + 1 : range * 4]
-    # fifth_list = full_dir[(range * 4) + 1 : range * 5]
-    # sixth_list = full_dir[(range * 5) + 1 : range * 6]
-    # sventh_list = full_dir[(range * 6) + 1 : range * 7]
-    # eighth_list = full_dir[(range * 7) + 1 : range * 8]
-    # ninth_list = full_dir[(range * 8) + 1 : range * 9]
-    # last_list = full_dir[(range * 9) + 1]
-
-    # import threading
