@@ -1,4 +1,3 @@
-from email.mime import image
 import json
 import sys
 import requests
@@ -7,7 +6,7 @@ import os
 
 BASEURL = "http://127.0.0.1:8000/api/v1/anime/"
 AUTH_TOKEN = {
-    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY0ODQ3MDQyMywiaWF0IjoxNjQ4Mzg0MDIzLCJqdGkiOiI0ZWE1ZGI4YWE3M2M0NmUyYTZlMDU1MjExY2NlNzJjNiIsInVzZXJfaWQiOjF9.SunZ_F2Fa8Lv-on4BUwuJZRQ5MnYtQSoUtKxevAYaxk",
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY0ODYyMTgxNSwiaWF0IjoxNjQ4NTM1NDE1LCJqdGkiOiI3ODA5OGZkZjYyNmE0ODEwODUyNDIzYTJkODIxMGRmMSIsInVzZXJfaWQiOjF9.Dp5jrjtO1wyksnOmTccVXOaqBnYshPsX-mW0DCIh8zU",
 }
 
 
@@ -21,7 +20,7 @@ def main(file):
     access = ast.literal_eval(access_request.text)["access"]
     data = json.load(open(file, "rb"))["data"]
     image_url = data["images"]["webp"]["image_url"]
-    anime_cover = requests.get(image_url).content
+    anime_cover = requests.get(image_url)
 
     DATA = {
         "episodes": [],
@@ -38,7 +37,12 @@ def main(file):
         "anime_themes": data["themes"],
         "anime_studios": data["studios"],
         "anime_producers": data["producers"],
+        "anime_name_synonyms": [],
     }
+
+    for item in data["title_synonyms"]:
+        DATA["anime_name_synonyms"].append({"name": item})
+
     res = requests.post(
         BASEURL,
         json=DATA,
@@ -46,12 +50,15 @@ def main(file):
             "authorization": f"Bearer {access}",
         },
     )
-    if anime_cover:
+
+    # print(json.dumps(DATA, indent=5))
+
+    if anime_cover.status_code == 200:
         image_res = requests.put(
             f"{BASEURL}{res.json()['id']}/",
             data=DATA,
             files={
-                "anime_cover": (f"{data['mal_id']}.webp", anime_cover),
+                "anime_cover": (f"{data['mal_id']}.webp", anime_cover.content),
             },
             headers={
                 "authorization": f"Bearer {access}",
@@ -65,16 +72,8 @@ def main(file):
 
             sys.exit()
     else:
-        file = open("broken.json", "w+")
-        data = json.load(file)
-        data.append(
-            {"episode": data["mal_id"]},
-        )
-        json.dump(
-            data,
-            file,
-            indent=4,
-        )
+        file = open("broken.txt", "a+")
+        file.write(f'MAL ID = {data["mal_id"]} | Primary Key = {res.json()["id"]}\n')
 
     if res.status_code == 201:
         print(f"PUSHED {data['mal_id']}")
