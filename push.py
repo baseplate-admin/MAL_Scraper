@@ -3,15 +3,27 @@ import sys
 import requests
 import ast
 import os
+from requests.adapters import HTTPAdapter, Retry
 
 BASEURL = "http://127.0.0.1:8000/api/v1/anime/"
 AUTH_TOKEN = {
-    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY0ODYyMTgxNSwiaWF0IjoxNjQ4NTM1NDE1LCJqdGkiOiI3ODA5OGZkZjYyNmE0ODEwODUyNDIzYTJkODIxMGRmMSIsInVzZXJfaWQiOjF9.Dp5jrjtO1wyksnOmTccVXOaqBnYshPsX-mW0DCIh8zU",
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY0ODY4MDEyOCwiaWF0IjoxNjQ4NTkzNzI4LCJqdGkiOiI0NzcxZGRiNWVlZjU0NmUzOTA1YjU5MTdkZjQ4MDFkOSIsInVzZXJfaWQiOjF9.9Rno6sFF5xG73o6CzlQHnTPDQrJrQjEoOJgLB6kGics",
 }
+session = requests.Session()
+retries = Retry(
+    total=5000,
+    backoff_factor=0.1,
+    status_forcelist=[
+        404,
+        400,
+    ],
+)
+
+session.mount("http://", HTTPAdapter(max_retries=retries))
 
 
 def main(file):
-    access_request = requests.post(
+    access_request = session.post(
         "http://127.0.0.1:8000/api/v1/token/refresh/",
         json={
             "refresh": AUTH_TOKEN["refresh"],
@@ -43,7 +55,7 @@ def main(file):
     for item in data["title_synonyms"]:
         DATA["anime_name_synonyms"].append({"name": item})
 
-    res = requests.post(
+    res = session.post(
         BASEURL,
         json=DATA,
         headers={
@@ -54,7 +66,7 @@ def main(file):
     # print(json.dumps(DATA, indent=5))
 
     if anime_cover.status_code == 200:
-        image_res = requests.put(
+        image_res = session.put(
             f"{BASEURL}{res.json()['id']}/",
             data=DATA,
             files={
