@@ -7,7 +7,7 @@ from requests.adapters import HTTPAdapter, Retry
 
 BASEURL = "http://127.0.0.1:8000/api/v1/anime/"
 AUTH_TOKEN = {
-    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY0ODY4MDEyOCwiaWF0IjoxNjQ4NTkzNzI4LCJqdGkiOiI0NzcxZGRiNWVlZjU0NmUzOTA1YjU5MTdkZjQ4MDFkOSIsInVzZXJfaWQiOjF9.9Rno6sFF5xG73o6CzlQHnTPDQrJrQjEoOJgLB6kGics",
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY0OTE2MDQ3MSwiaWF0IjoxNjQ5MDc0MDcxLCJqdGkiOiJlYmVhODU5YWRkYWE0ODRlYTQwZTllOWQ2OTBmM2U4YSIsInVzZXJfaWQiOjF9.HuR85QwJHtAshBgYgfSSzF80SS3weM8nc2qK29F95a4",
 }
 session = requests.Session()
 retries = Retry(
@@ -63,7 +63,9 @@ def main(file):
         },
     )
 
+    json.dump(DATA, open("test.json", "w+"), indent=4)
     # print(json.dumps(DATA, indent=5))
+    # print(res.json())
 
     if anime_cover.status_code == 200:
         image_res = session.put(
